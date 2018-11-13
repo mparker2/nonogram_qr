@@ -1,6 +1,7 @@
 import os
 import shutil
 from tempfile import mkstemp
+import itertools as it
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -8,7 +9,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.animation import ArtistAnimation
 
 
-def draw_nonogram(row_rle, col_rle, shape=None, matrix=None):
+def draw_nonogram(row_rle, col_rle, shape=None, mat=None):
     '''
     Draw a Nonogram puzzle using matplotlib
 
@@ -65,8 +66,8 @@ def draw_nonogram(row_rle, col_rle, shape=None, matrix=None):
         for idx, val in enumerate(col[::-1]):
             ax.annotate(xy=(j + 0.5, idx + 0.5), s=val, ha='center', va='center')
 
-    if matrix is not None:
-        for i, j in np.argwhere(matrix == 1):
+    if mat is not None:
+        for i, j in np.argwhere(mat == 1):
             ax.add_patch(Rectangle(xy=(j, -i - 1), width=1, height=1, color='k'))
     # adjust x and y limits
     lim_left = max([len(x) for x in row_rle + col_rle]) + 1
@@ -88,7 +89,11 @@ def draw_solution_so_far(mat, ax):
     return patches
 
 
-def draw_solver_progress(progress_mats, display_with_ipython=True, img_filename=None):
+def draw_solver_progress(progress_mats,
+                         display_with_ipython=True,
+                         img_filename=None,
+                         imagemagick_path=None,
+                         imagemagick_extra_args=None):
     '''
     Produce a GIF of solution progress using matplotlib, requires imagemagick.
 
@@ -116,9 +121,11 @@ def draw_solver_progress(progress_mats, display_with_ipython=True, img_filename=
     if img_filename is None:
         handle, img_filename = mkstemp(suffix='.gif')
         os.close(handle)
-    anim.save(img_filename, writer='imagemagick')
+    if imagemagick_path:
+        plt.rcParams["animation.convert_path"] = imagemagick_path
+    anim.save(img_filename, writer='imagemagick', extra_args=imagemagick_extra_args)
     plt.close()
     if display_with_ipython:
         from IPython.display import Image, display
-        shtuil.copy2(img_filename, img_filename + '.png')
+        shutil.copy2(img_filename, img_filename + '.png')
         display(Image(filename=img_filename + '.png'))

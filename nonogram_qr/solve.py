@@ -62,6 +62,8 @@ def rle_to_binary_arr(row_size, row_rle, space_rle):
     Convert a run length encoding of the filled and space sizes to a
     binary array (filled positions represented by ones, unfilled by zeros)
     '''
+    if not len(row_rle):
+        return np.empty(row_size, dtype=np.int)
     row_rle = iter(row_rle)
     arr = np.empty(row_size, dtype=np.int)
     pos = 0
